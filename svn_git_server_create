@@ -1,0 +1,91 @@
+#mkdir /svn
+#svnserve -d -r /svn/
+//-d表示daemon方式运行
+//-r /svn指定根目录是/svn/
+
+#ps -ef | grep svnserve
+
+#cd /svn
+#svnadmin create repos
+//在repos目录下生成conf dav db format hooks locks README.txt
+
+//配置允许访问repos的用户
+#cd conf
+//三个文件authz passwd svnserve.conf
+//修改svnserve.conf
+#vim svnserve.conf
+//修改内容为
+//[general]
+//anon-access = read
+//auth-access = write
+//password-db = passwd
+//authz-db = authz
+
+//修改passwd
+#vim passwd
+//修改内容如下
+//[users]
+//<用户1> = <密码1>
+//<用户2> = <密码2>
+
+[users]
+alan = password
+king = hello
+
+//alan, king表示当前repos版本库的成员
+
+//修改authz
+#vim authz
+#[groups]
+#<用户组名> = <用户1>, <用户2>
+#其中1个用户组可以包含1个或多个用户,用逗号隔开,用户必须要在passwd文件中能找到的
+
+[/目录]   #[repos:/目录]
+@<用户祖名> = <权限>
+<用户名> = <权限>
+[groups]
+admin = alan
+[/]
+@admin = rw
+[/svn/p1/webProject]
+knig = rw
+[/svn/p1/web]
+zp = r
+* = rw
+
+
+#killall svnserve
+#svnserve -d -r /svn
+
+
+client:
+#svn checkout svn://serverip/repos
+#svn update svn://serverip/repos
+#svn commit -m '....'
+
+
+#mkdir svntest/{trunk,branchs,tags}
+#svn import svntest svn://serverip/repos   -m '...'//导入目录
+#svn import dir  svn://serverip/repos -m '...'  //导入dir下的文件和目录
+/这样的导入不会在版本库中创建目录svntest,dir,如果希望创建则
+#svn import svntest svn://serverip/repos/svntest -m '....'
+
+
+
+===========================================================================
+
+
+
+
+#git clone --bare my_project my_project.git
+//相当于cp -Rf my_project/.git my_project.git
+#scp -r my_project.git user@git.example.com:/opt/git
+
+//使用
+#git clone user@git.example.com:/opt/git/my_project.git
+//如果一个ssh用户对/opt/git/my_project.git目录有写权限,他会自动具有推送权限
+//运行git init --shared选项 git会自对该仓库加入可写的组
+
+#ssh user@git.example.com
+#cd /opt/git/my_project.git
+#git init --bare --share
